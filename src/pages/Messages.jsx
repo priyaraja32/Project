@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 const BASE =
-  "https://api.sheety.co/b9d6377217c0f00eab5cf85582e4a378/skillswap";
+  "https://api.sheety.co/a2b1328993660a67af1a0300ee237042/skillswap/";
 
 export default function Messages() {
   const currentUserId = 1;

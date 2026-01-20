@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { mockApi } from "../services/api";
-import Navbar from "../components/Navbar";
 import LoginRight from "../components/LoginRight";
 
 export default function Login() {
@@ -15,7 +14,6 @@ export default function Login() {
 
     try {
       const res = await mockApi.get("/users");
-
       const user = res.data.find(
         (u) => u.email === email && u.password === password
       );
@@ -28,75 +26,68 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
       navigate("/dashboard");
     } catch (err) {
-      console.error(err);
       alert("Login failed");
     }
   };
 
   return (
-    <>
-      <Navbar
-        infoText="Don’t have an account?"
-        infoLinkText="Sign up"
-        infoLink="/signup"
-        actionText="Sign up"
-        actionLink="/signup"
-      />
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="max-w-6xl w-full grid lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-3xl p-10 shadow-xl">
+          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
+          <p className="text-gray-500 mb-8">
+            Don’t have an account?{" "}
+            <Link to="/signup" className="text-indigo-600 font-semibold">
+              Sign up
+            </Link>
+          </p>
 
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <Input
+              icon={<Mail size={18} />}
+              type="email"
+              value={email}
+              setValue={setEmail}
+              label="Email address"
+            />
+            <Input
+              icon={<Lock size={18} />}
+              type="password"
+              value={password}
+              setValue={setPassword}
+              label="Password"
+            />
 
-          <div className="bg-white rounded-3xl p-10 shadow-xl">
-            <h1 className="text-3xl font-bold mb-2">
-              Unlock Your Potential
-            </h1>
-            <p className="text-gray-500 mb-8">
-              Enter your details to access the platform
-            </p>
-
-            <form onSubmit={handleLogin} className="space-y-6">
-
-              <div className="relative">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder=" "
-                  className="peer w-full pl-12 pr-5 py-4 rounded-2xl border bg-gray-50 focus:ring-2 focus:ring-indigo-500"
-                />
-                <label className="absolute left-12 top-1/2 -translate-y-1/2 text-gray-400 text-sm peer-focus:top-3 peer-focus:text-xs bg-white px-1">
-                  Email address
-                </label>
-              </div>
-
-              <div className="relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder=" "
-                  className="peer w-full pl-12 pr-5 py-4 rounded-2xl border bg-gray-50 focus:ring-2 focus:ring-indigo-500"
-                />
-                <label className="absolute left-12 top-1/2 -translate-y-1/2 text-gray-400 text-sm peer-focus:top-3 peer-focus:text-xs bg-white px-1">
-                  Password
-                </label>
-              </div>
-
-              <button className="w-full py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600">
-                Log In →
-              </button>
-            </form>
-          </div>
-
-          <LoginRight />
+            <button className="w-full py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600">
+              Log In →
+            </button>
+          </form>
         </div>
+
+        <LoginRight />
       </div>
-    </>
+    </div>
   );
 }
 
+function Input({ icon, type, value, setValue, label }) {
+  return (
+    <div className="relative">
+      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400">
+        {icon}
+      </div>
+      <input
+        type={type}
+        required
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder=" "
+        className="peer w-full pl-12 pr-5 py-4 rounded-2xl border bg-gray-50"
+      />
+      <label className="absolute left-12 top-3 text-xs text-gray-400 bg-white px-1">
+        {label}
+      </label>
+    </div>
+  );
+}
 

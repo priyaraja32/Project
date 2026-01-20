@@ -194,7 +194,7 @@ export default function Profile() {
   );
 }
 
-/* ---------- COMPONENTS ---------- */
+/* COMPONENTS  */
 
 function NavItem({ icon, label, to, active }) {
   return (

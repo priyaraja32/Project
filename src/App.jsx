@@ -8,7 +8,7 @@ import Signup from "./pages/Signup";
 /* MAIN PAGE */
 import Dashboard from "./pages/Dashboard";
 import MySkills from "./pages/MySkills";
-import AddSkill from "./pages/AddSkill"; // ✅ NEW
+import AddSkill from "./pages/AddSkill";
 import ExploreSkills from "./pages/ExploreSkills";
 import Community from "./pages/Community";
 import Messages from "./pages/Messages";
@@ -33,7 +33,7 @@ export default function App() {
         {/* MAIN APP */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/my-skills" element={<MySkills />} />
-        <Route path="/add-skill" element={<AddSkill />} /> {/* ✅ FIX */}
+        <Route path="/add-skill" element={<AddSkill />} />
         <Route path="/explore-skills" element={<ExploreSkills />} />
         <Route path="/community" element={<Community />} />
         <Route path="/messages" element={<Messages />} />

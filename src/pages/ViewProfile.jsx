@@ -166,7 +166,7 @@ export default function ViewProfile() {
   );
 }
 
-/* ---------------- UI PARTS ---------------- */
+/* UI PARTS*/
 
 function MessageModal({ user, onClose }) {
   return (

@@ -50,7 +50,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  /* ---------------- FETCH USER ---------------- */
+  /*  FETCH USER */
 
   useEffect(() => {
     sheetApi
@@ -75,7 +75,7 @@ export default function Settings() {
       .catch(() => console.warn("User not found"));
   }, [userId]);
 
-  /* ---------------- SAVE PROFILE ---------------- */
+  /*  SAVE PROFILE */
 
   const handleSave = async () => {
     setSaving(true);
@@ -100,7 +100,7 @@ export default function Settings() {
     setSaving(false);
   };
 
-  /* ---------------- PASSWORD ---------------- */
+  /* PASSWORD*/
 
   const handleChangePassword = async () => {
     if (!passwords.current || !passwords.new) {
@@ -121,14 +121,14 @@ export default function Settings() {
     }
   };
 
-  /* ---------------- LOGOUT ---------------- */
+  /* LOGOUT*/
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
-  /* ---------------- PROFILE IMAGE ---------------- */
+  /*PROFILE IMAGE */
 
   const handleProfileUpload = (e) => {
     const file = e.target.files[0];
@@ -256,7 +256,7 @@ export default function Settings() {
   );
 }
 
-/* ---------------- UI COMPONENTS ---------------- */
+/*  UI COMPONENTS  */
 
 function NavItem({ icon, label, onClick, active }) {
   return (

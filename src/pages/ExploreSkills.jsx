@@ -15,7 +15,7 @@ import {
   Send,
 } from "lucide-react";
 
-/* -------------------- CATEGORY ICON MAP -------------------- */
+/* CATEGORY ICON MAP  */
 
 const categoryIconMap = {
   Technology: <Code2 size={14} />,
@@ -26,7 +26,7 @@ const categoryIconMap = {
   Fitness: <Dumbbell size={14} />,
 };
 
-/* -------------------- CATEGORIES -------------------- */
+/* CATEGORIES */
 
 const categories = [
   { name: "All", icon: <LayoutGrid size={18} /> },
@@ -38,7 +38,7 @@ const categories = [
   { name: "Fitness", icon: <Dumbbell size={18} /> },
 ];
 
-/* -------------------- SKILLS DATA -------------------- */
+/*  SKILLS DATA */
 
 const skills = [
   {
@@ -121,7 +121,7 @@ const skills = [
   },
 ];
 
-/* ======================= COMPONENT ======================= */
+/*COMPONENT */
 
 export default function ExploreSkills() {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -130,7 +130,7 @@ export default function ExploreSkills() {
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [toast, setToast] = useState("");
 
-  /* -------------------- FILTER -------------------- */
+  /*  FILTER*/
 
   const filteredSkills = skills.filter((skill) => {
     const matchCategory =
@@ -145,7 +145,7 @@ export default function ExploreSkills() {
     return matchCategory && matchSearch && matchRecommended;
   });
 
-  /* -------------------- REQUEST SWAP -------------------- */
+  /*  REQUEST SWAP*/
 
   const requestSwap = (skill) => {
     setToast(`Swap request sent to ${skill.user}`);
