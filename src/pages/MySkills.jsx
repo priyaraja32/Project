@@ -31,9 +31,26 @@ export default function MySkills() {
   const [skills, setSkills] = useState([]);
   const [filter, setFilter] = useState("All");
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   useEffect(() => {
-    fetchActivities().then(setActivities);
-    fetchSkills().then(setSkills);
+    const loadData = async () => {
+      try {
+        const [activitiesData, skillsData] = await Promise.all([
+          fetchActivities(),
+          fetchSkills(),
+        ]);
+        setActivities(activitiesData);
+        setSkills(skillsData);
+      } catch (err) {
+        setError("Failed to load data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   const handleProfileUpload = (e) => {
@@ -76,10 +93,26 @@ export default function MySkills() {
           </div>
 
           <nav className="space-y-1">
-            <SidebarItem icon={<LayoutDashboard size={16} />} label="Dashboard" onClick={() => navigate("/dashboard")} />
-            <SidebarItem icon={<GraduationCap size={16} />} label="Explore Skills" onClick={() => navigate("/explore-skills")} />
-            <SidebarItem icon={<User size={16} />} label="Profile" onClick={() => navigate(`/profile/${userId}`)} />
-            <SidebarItem icon={<Settings size={16} />} label="Settings" onClick={() => navigate("/settings")} />
+            <SidebarItem
+              icon={<LayoutDashboard size={16} />}
+              label="Dashboard"
+              onClick={() => navigate("/dashboard")}
+            />
+            <SidebarItem
+              icon={<GraduationCap size={16} />}
+              label="Explore Skills"
+              onClick={() => navigate("/explore-skills")}
+            />
+            <SidebarItem
+              icon={<User size={16} />}
+              label="Profile"
+              onClick={() => navigate(`/profile/${userId}`)}
+            />
+            <SidebarItem
+              icon={<Settings size={16} />}
+              label="Settings"
+              onClick={() => navigate("/settings")}
+            />
           </nav>
         </aside>
 
@@ -104,10 +137,26 @@ export default function MySkills() {
 
           {/* STATS */}
           <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <StatCard title="Skills Offered" value={skills.length} icon={<TrendingUp size={18} />} />
-            <StatCard title="Active Swaps" value="1" icon={<RefreshCw size={18} />} />
-            <StatCard title="Hours Taught" value="24h" icon={<Clock size={18} />} />
-            <StatCard title="Rating" value="4.5" icon={<Star size={18} />} />
+            <StatCard
+              title="Skills Offered"
+              value={skills.length}
+              icon={<TrendingUp size={18} />}
+            />
+            <StatCard
+              title="Active Swaps"
+              value="1"
+              icon={<RefreshCw size={18} />}
+            />
+            <StatCard
+              title="Hours Taught"
+              value="24h"
+              icon={<Clock size={18} />}
+            />
+            <StatCard
+              title="Rating"
+              value="4.5"
+              icon={<Star size={18} />}
+            />
           </div>
 
           {/* ACTIVITY */}
@@ -115,7 +164,9 @@ export default function MySkills() {
             <div className="flex justify-between px-6 py-4 border-b border-gray-200/70">
               <div>
                 <p className="font-semibold text-sm">Recent Activity</p>
-                <p className="text-xs text-gray-500">Latest skill swaps</p>
+                <p className="text-xs text-gray-500">
+                  Latest skill swaps
+                </p>
               </div>
 
               <select
@@ -129,11 +180,21 @@ export default function MySkills() {
               </select>
             </div>
 
-            {filteredActivities.length === 0 ? (
+            {loading && (
+              <p className="p-6 text-sm text-gray-500">Loading...</p>
+            )}
+
+            {error && (
+              <p className="p-6 text-sm text-red-500">{error}</p>
+            )}
+
+            {!loading && !error && filteredActivities.length === 0 && (
               <p className="p-6 text-sm text-gray-500">
                 No recent activity.
               </p>
-            ) : (
+            )}
+
+            {!loading && !error && filteredActivities.length > 0 && (
               <table className="w-full text-sm">
                 <tbody>
                   {filteredActivities.map((a) => (
@@ -181,7 +242,9 @@ function ActivityRow({ icon, title, partner, date, status }) {
   return (
     <tr className="border-b border-gray-200/70 last:border-0 hover:bg-gray-50">
       <td className="px-6 py-4 flex gap-3 items-center">
-        <div className="text-blue-500">{icons[icon]}</div>
+        <div className="text-blue-500">
+          {icons[icon] || <Code2 size={16} />}
+        </div>
         <div>
           <p className="font-medium">{title}</p>
           <p className="text-xs text-gray-500">{partner}</p>

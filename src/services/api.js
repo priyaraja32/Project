@@ -104,3 +104,5 @@ export const addSkill = async (skillData) => {
     return res.data;
   }
 };
+
+

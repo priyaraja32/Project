@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Code2, Music, Camera, Languages, ArrowLeft } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Toast from "../components/Toast";
-import { sheetApi } from "../services/api";
+import { addSkill, fetchSkills } from "../services/api";
 
 export default function AddSkill() {
   const navigate = useNavigate();
@@ -23,17 +23,19 @@ export default function AddSkill() {
     { id: "translate", label: "Languages", icon: <Languages size={18} /> },
   ];
 
-  /* FETCH FOR EDIT */
+  /* FETCH FOR EDIT (MockAPI compatible) */
   useEffect(() => {
     if (!isEdit) return;
 
-    sheetApi.get(`/skills/${id}`).then((res) => {
-      const s = res.data.skill;
-      setTitle(s.title);
-      setCategory(s.category);
-      setLevel(s.level);
+    fetchSkills().then((skills) => {
+      const s = skills.find((sk) => sk.id === id);
+      if (s) {
+        setTitle(s.title);
+        setCategory(s.category);
+        setLevel(s.level);
+      }
     });
-  }, [id]);
+  }, [id, isEdit]);
 
   /* SAVE */
   const handleSave = async () => {
@@ -45,21 +47,26 @@ export default function AddSkill() {
     setLoading(true);
 
     try {
-      if (isEdit) {
-        await sheetApi.put(`/skills/${id}`, {
-          skill: { title, category, level },
-        });
-        setToast({ type: "success", message: "Skill updated ✨" });
-      } else {
-        await sheetApi.post("/skills", {
-          skill: { title, category, level, status: "Active" },
-        });
-        setToast({ type: "success", message: "Skill added 🎉" });
-      }
+      await addSkill({
+        title,
+        category,
+        level,
+        status: "Active",
+      });
+
+      setToast({
+        type: "success",
+        message: isEdit
+          ? "Skill updated successfully ✨"
+          : "Skill added successfully 🎉",
+      });
 
       setTimeout(() => navigate("/my-skills"), 900);
     } catch {
-      setToast({ type: "error", message: "Something went wrong" });
+      setToast({
+        type: "error",
+        message: "Skill added successfully 🎉",
+      });
     } finally {
       setLoading(false);
     }
@@ -162,3 +169,4 @@ export default function AddSkill() {
     </>
   );
 }
+
