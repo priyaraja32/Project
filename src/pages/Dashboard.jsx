@@ -33,6 +33,14 @@ const fetchSheetData = async (resource) => {
   }
 };
 
+
+const normalizeMatch = (match) => {
+  if (match >= 80) return Math.min(match, 100); // OFFERS
+  if (match >= 40) return Math.max(match, 40);  // NEEDS
+  if (match > 0) return Math.max(match, 20);    // RELATED
+  return 0;                                     // NO MATCH
+};
+
 export default function Dashboard() {
   const [query, setQuery] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -57,14 +65,13 @@ export default function Dashboard() {
         role: u.role || "Skill Swapper",
         image: u.avatar || "/profile.jpg",
         offers: matchMap[u.id]?.offers
-          ? matchMap[u.id].offers.split(",")
+          ? matchMap[u.id].offers.split(",").map(s => s.trim())
           : [],
         needs: matchMap[u.id]?.needs
-          ? matchMap[u.id].needs.split(",")
+          ? matchMap[u.id].needs.split(",").map(s => s.trim())
           : [],
-        lastActive:
-          matchMap[u.id]?.lastActive || "Recently joined",
-        match: 0, // no default %
+        lastActive: matchMap[u.id]?.lastActive || "Recently joined",
+        match: 0,
       }));
 
       setAllUsers(merged);
@@ -84,27 +91,27 @@ export default function Dashboard() {
     aiMatchUsers(
       query,
       allUsers.map((u) => ({
-        id: u.id,          // ✅ MUST BE id
+        id: u.id,
         offers: u.offers,
         needs: u.needs,
       }))
     ).then((aiResults) => {
-      console.log("AI RESULTS:", aiResults); // 🔍 debug (keep once)
-
       const scoreMap = {};
       aiResults.forEach((r) => {
-        scoreMap[r.userId] = r.match; // ✅ userId from Gemini
+        scoreMap[r.userId] = r.match;
       });
 
-      const ranked = allUsers
-        .map((u) => ({
-          ...u,
-          match: scoreMap[u.id] ?? 0,
-        }))
-        .filter((u) => u.match > 0)
+      const withScores = allUsers
+        .map((u) => {
+          const rawMatch = scoreMap[u.id] ?? 0;
+          return {
+            ...u,
+            match: normalizeMatch(rawMatch),
+          };
+        })
         .sort((a, b) => b.match - a.match);
 
-      setMatches(ranked);
+      setMatches(withScores);
       setAiLoading(false);
     });
   }, [query, allUsers, isSearching]);
@@ -151,7 +158,6 @@ export default function Dashboard() {
                 key={m.id}
                 className="relative bg-white rounded-2xl p-6 border border-gray-200"
               >
-                {/* ✅ SHOW % ONLY WHEN SEARCHING */}
                 {isSearching && (
                   <span
                     className={`absolute top-4 right-4 px-3 py-1 text-xs font-semibold rounded-full ${getMatchStyle(
@@ -211,7 +217,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* RIGHT SIDE */}
+          {/* RIGHT PANEL (UNCHANGED) */}
           <div className="space-y-6">
             <Card title="Trending Skills" icon={<TrendingUp size={18} />}>
               <TrendItem icon={<Monitor />} label="Web Dev" value="+12%" />
@@ -292,9 +298,10 @@ const Tag = ({ text, type }) => (
 );
 
 const getMatchStyle = (m) =>
-  m >= 90
+  m >= 80
     ? "bg-green-100 text-green-700"
-    : m >= 75
+    : m >= 40
     ? "bg-blue-100 text-blue-700"
-    : "bg-indigo-100 text-indigo-700";
-
+    : m > 0
+    ? "bg-indigo-100 text-indigo-700"
+    : "bg-gray-100 text-gray-400";

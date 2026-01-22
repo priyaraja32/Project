@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar";
 import {
   MessageSquare,
@@ -8,30 +8,23 @@ import {
   Heart,
   MessageCircle,
   UserPlus,
+  Trash2,
+  Edit,
 } from "lucide-react";
 import axios from "axios";
 
-/*  CONFIG*/
-
+/* CONFIG */
 const SHEET_URL =
-  "https://api.sheety.co/a2b1328993660a67af1a0300ee237042/skillswap/community";
+  "https://api.sheety.co/09934dbeb4cdbd806015e7f281dc4805/skillswap/community";
 
-/*  FALLBACK DATA (CRITICAL) */
-
+/* FALLBACK DATA */
 const FALLBACK_POSTS = [
   {
     id: 1,
     title: "Welcome to SkillSwap Community 🎉",
     description: "Sheety API is currently unavailable.",
     likes: 12,
-    comments: 4,
-  },
-  {
-    id: 2,
-    title: "React Skill Exchange",
-    description: "Anyone interested in React + Node swap?",
-    likes: 8,
-    comments: 2,
+    comments: [],
   },
 ];
 
@@ -42,42 +35,36 @@ const sheety = axios.create({
     : {},
 });
 
-/*  COMPONENT*/
-
 export default function Community() {
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("Feed");
   const [newPost, setNewPost] = useState("");
   const [savedPosts, setSavedPosts] = useState([]);
-  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  /*  FETCH POSTS  */
-
   const fetchPosts = async () => {
-    setLoading(true);
-    setError(null);
-
     try {
       const res = await sheety.get("");
-      setPosts(res.data?.community?.reverse() || FALLBACK_POSTS);
-    } catch (err) {
-      console.warn("⚠️ Sheety unavailable, using fallback");
-
+      setPosts(
+        res.data?.community?.reverse().map((p) => ({
+          ...p,
+          comments: [],
+        })) || FALLBACK_POSTS
+      );
+    } catch {
       setPosts(FALLBACK_POSTS);
-      setError("Live community temporarily unavailable");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ACTIONS  */
-
-  const handleCreatePost = () => {
+  /* CREATE POST */
+  const handleCreatePost = async () => {
     if (!newPost.trim()) return;
 
     const tempPost = {
@@ -85,86 +72,120 @@ export default function Community() {
       title: newPost,
       description: newPost,
       likes: 0,
-      comments: 0,
+      comments: [],
     };
 
     setPosts((prev) => [tempPost, ...prev]);
     setNewPost("");
+
+    try {
+      await sheety.post("", {
+        community: {
+          title: tempPost.title,
+          description: tempPost.description,
+          likes: 0,
+        },
+      });
+      setSuccessMsg("Post published successfully!!..");
+    } catch {
+      setSuccessMsg("Posted locally (API unavailable) ⚠️");
+    }
+
+    setTimeout(() => setSuccessMsg(""), 2000);
   };
 
-  const handleLike = (post) => {
+  /* LIKE */
+  const handleLike = (id) => {
     setPosts((prev) =>
       prev.map((p) =>
-        p.id === post.id ? { ...p, likes: p.likes + 1 } : p
+        p.id === id ? { ...p, likes: p.likes + 1 } : p
       )
     );
   };
 
-  const handleComment = (post) => {
+  /* COMMENT */
+  const handleAddComment = (id, text) => {
+    if (!text.trim()) return;
+
     setPosts((prev) =>
       prev.map((p) =>
-        p.id === post.id ? { ...p, comments: p.comments + 1 } : p
+        p.id === id
+          ? { ...p, comments: [...p.comments, text] }
+          : p
       )
     );
   };
 
+  /* SAVE */
   const handleSavePost = (post) => {
     if (!savedPosts.find((p) => p.id === post.id)) {
       setSavedPosts([...savedPosts, post]);
+      setSuccessMsg("Post saved successfully ");
+      setTimeout(() => setSuccessMsg(""), 2000);
     }
   };
 
-  /*  TAB CONTENT */
+  /* DELETE */
+  const handleDelete = (id) => {
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+    setSuccessMsg("Post deleted ");
+    setTimeout(() => setSuccessMsg(""), 2000);
+  };
+
+  /* EDIT */
+  const handleEdit = (id, text) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, title: text, description: text }
+          : p
+      )
+    );
+    setSuccessMsg("Post updated ");
+    setTimeout(() => setSuccessMsg(""), 2000);
+  };
 
   const renderContent = () => {
     if (loading) return <EmptyState text="Loading community…" />;
-    if (error && !posts.length) return <EmptyState text={error} />;
 
-    switch (activeTab) {
-      case "Feed":
-        return (
-          <>
-            <CreatePost
-              newPost={newPost}
-              setNewPost={setNewPost}
-              onPost={handleCreatePost}
-            />
-
-            {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                onLike={handleLike}
-                onComment={handleComment}
-                onSave={handleSavePost}
-              />
-            ))}
-          </>
-        );
-
-      case "Explore":
-        return posts.slice(0, 3).map((post) => (
-          <PostCard key={post.id} post={post} />
-        ));
-
-      case "My Mentors":
-        return (
-          <>
-            <MentorCard name="Alex Rivera" role="AI Specialist" />
-            <MentorCard name="Rahul Verma" role="Full Stack Mentor" />
-          </>
-        );
-
-      case "Saved Posts":
-        return savedPosts.length ? (
-          savedPosts.map((post) => <PostCard key={post.id} post={post} />)
-        ) : (
-          <EmptyState text="No saved posts yet" />
-        );
-
-      default:
-        return null;
+    if (activeTab === "Saved Posts") {
+      return savedPosts.length ? (
+        savedPosts.map((post) => <PostCard key={post.id} post={post} />)
+      ) : (
+        <EmptyState text="No saved posts yet" />
+      );
     }
+
+    if (activeTab === "My Mentors") {
+      return (
+        <>
+          <MentorCard name="Alex Rivera" role="AI Specialist" />
+          <MentorCard name="Rahul Verma" role="Full Stack Mentor" />
+        </>
+      );
+    }
+
+    return (
+      <>
+        <CreatePost
+          newPost={newPost}
+          setNewPost={setNewPost}
+          onPost={handleCreatePost}
+        />
+
+        {posts.map((post) => (
+          <PostCard
+            key={post.id}
+            post={post}
+            onLike={handleLike}
+            onSave={handleSavePost}
+            onComment={handleAddComment}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+          />
+        ))}
+      </>
+    );
   };
 
   return (
@@ -173,8 +194,7 @@ export default function Community() {
 
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-12 gap-6">
-          {/* LEFT */}
-          <aside className="col-span-3">
+          <aside className="col-span-3 space-y-2">
             {["Feed", "Explore", "My Mentors", "Saved Posts"].map((item) => (
               <SidebarItem
                 key={item}
@@ -191,10 +211,15 @@ export default function Community() {
             ))}
           </aside>
 
-          {/* CENTER */}
-          <main className="col-span-6 space-y-6">{renderContent()}</main>
+          <main className="col-span-6 space-y-6">
+            {successMsg && (
+              <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+                {successMsg}
+              </div>
+            )}
+            {renderContent()}
+          </main>
 
-          {/* RIGHT */}
           <aside className="col-span-3 space-y-6">
             <Card title="Popular Topics">
               <Topic tag="#React" count="1.2k posts" />
@@ -202,7 +227,7 @@ export default function Community() {
             </Card>
 
             <Card title="Top Mentors">
-              <Mentor name="Alex Rivera" role="AI Specialist" />
+              <Mentor name="Alex Rivera" />
             </Card>
           </aside>
         </div>
@@ -211,13 +236,13 @@ export default function Community() {
   );
 }
 
-/* UI COMPONENTS  */
+/*  UI COMPONENTS  */
 
 const SidebarItem = ({ icon, label, active, onClick }) => (
   <div
     onClick={onClick}
-    className={`flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer ${
-      active ? "bg-indigo-50 text-indigo-600" : "text-gray-600"
+    className={`flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition ${
+      active ? "bg-indigo-50 text-indigo-600" : "text-gray-600 hover:bg-gray-100"
     }`}
   >
     {icon}
@@ -226,7 +251,7 @@ const SidebarItem = ({ icon, label, active, onClick }) => (
 );
 
 const CreatePost = ({ newPost, setNewPost, onPost }) => (
-  <div className="bg-white border rounded-xl p-4">
+  <div className="bg-white rounded-xl p-4 shadow-sm">
     <input
       value={newPost}
       onChange={(e) => setNewPost(e.target.value)}
@@ -242,33 +267,91 @@ const CreatePost = ({ newPost, setNewPost, onPost }) => (
   </div>
 );
 
-const PostCard = ({ post, onLike, onComment, onSave }) => (
-  <div className="bg-white border rounded-xl p-5 space-y-3">
-    <h3 className="font-semibold">{post.title}</h3>
-    <p className="text-sm text-gray-600">{post.description}</p>
+const PostCard = ({ post, onLike, onSave, onComment, onDelete, onEdit }) => {
+  const [commentText, setCommentText] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(post.title);
+  const inputRef = useRef(null);
 
-    <div className="flex gap-4 text-sm text-gray-500">
-      {onLike && (
-        <button onClick={() => onLike(post)}>
+  return (
+    <div className="bg-white rounded-xl p-5 space-y-3 shadow-sm">
+      {editing ? (
+        <input
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          className="w-full border rounded px-2 py-1"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onEdit(post.id, editText);
+              setEditing(false);
+            }
+          }}
+        />
+      ) : (
+        <>
+          <h3 className="font-semibold">{post.title}</h3>
+          <p className="text-sm text-gray-600">{post.description}</p>
+        </>
+      )}
+
+      <div className="flex gap-4 text-sm text-gray-500">
+        <button onClick={() => onLike(post.id)} className="flex gap-1">
           <Heart size={16} /> {post.likes}
         </button>
-      )}
-      {onComment && (
-        <button onClick={() => onComment(post)}>
-          <MessageCircle size={16} /> {post.comments}
+
+        <button
+          className="flex gap-1"
+          onClick={() => inputRef.current?.focus()}
+        >
+          <MessageCircle size={16} /> {post.comments.length}
         </button>
-      )}
-      {onSave && (
+
         <button onClick={() => onSave(post)}>
           <Bookmark size={16} />
         </button>
+
+        <button onClick={() => setEditing(!editing)}>
+          <Edit size={16} />
+        </button>
+
+        <button onClick={() => onDelete(post.id)}>
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      {/*  SHOW COMMENTS */}
+      {post.comments.length > 0 && (
+        <div className="space-y-1">
+          {post.comments.map((comment, index) => (
+            <div
+              key={index}
+              className="text-sm text-gray-700 bg-gray-100 px-3 py-1 rounded-lg"
+            >
+              {comment}
+            </div>
+          ))}
+        </div>
       )}
+
+      <input
+        ref={inputRef}
+        value={commentText}
+        onChange={(e) => setCommentText(e.target.value)}
+        placeholder="Write a comment…"
+        className="w-full text-sm border rounded-lg px-3 py-1"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onComment(post.id, commentText);
+            setCommentText("");
+          }
+        }}
+      />
     </div>
-  </div>
-);
+  );
+};
 
 const Card = ({ title, children }) => (
-  <div className="bg-white border rounded-xl p-4">
+  <div className="bg-white rounded-xl p-4 shadow-sm">
     <h3 className="font-semibold mb-2">{title}</h3>
     {children}
   </div>
@@ -289,7 +372,7 @@ const Mentor = ({ name }) => (
 );
 
 const MentorCard = ({ name, role }) => (
-  <div className="bg-white border rounded-xl p-4">
+  <div className="bg-white rounded-xl p-4 shadow-sm">
     <p className="font-semibold">{name}</p>
     <p className="text-sm text-gray-500">{role}</p>
   </div>
@@ -298,3 +381,4 @@ const MentorCard = ({ name, role }) => (
 const EmptyState = ({ text }) => (
   <div className="text-center text-gray-400 py-10">{text}</div>
 );
+

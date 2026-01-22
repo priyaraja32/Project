@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 const BASE =
-  "https://api.sheety.co/a2b1328993660a67af1a0300ee237042/skillswap/";
+  "https://api.sheety.co/09934dbeb4cdbd806015e7f281dc4805/skillswap/";
 
 export default function Messages() {
   const currentUserId = 1;
@@ -16,31 +16,31 @@ export default function Messages() {
   /* FETCH USERS + MESSAGES */
   useEffect(() => {
     fetch(`${BASE}/users`)
-      .then(res => res.json())
-      .then(d =>
+      .then((res) => res.json())
+      .then((d) =>
         setUsers(
-          (d.users || []).map(u => ({
+          (d.users || []).map((u) => ({
             ...u,
             online: true,
-            avatar: u.avatar || "https://i.pravatar.cc/150?img=" + u.id,
+            avatar: u.avatar || `https://i.pravatar.cc/150?img=${u.id}`,
           }))
         )
       );
 
     fetch(`${BASE}/messages`)
-      .then(res => res.json())
-      .then(d => setMessages(d.messages || []));
+      .then((res) => res.json())
+      .then((d) => setMessages(d.messages || []));
   }, []);
 
   /* FILTERED USERS */
-  const filteredUsers = users.filter(u =>
+  const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(search.toLowerCase())
   );
 
   /* CHAT MESSAGES */
   const chatMessages = selectedUser
     ? messages.filter(
-        m =>
+        (m) =>
           (Number(m.senderid) === currentUserId &&
             Number(m.receiverid) === selectedUser.id) ||
           (Number(m.receiverid) === currentUserId &&
@@ -48,9 +48,9 @@ export default function Messages() {
       )
     : [];
 
-  /* SEND MESSAGE (UI DEMO) */
+  /* SEND MESSAGE */
   const sendMessage = () => {
-    if (!input || !selectedUser) return;
+    if (!input.trim() || !selectedUser) return;
 
     const newMsg = {
       id: Date.now(),
@@ -60,12 +60,12 @@ export default function Messages() {
       timestamp: "Just now",
     };
 
-    setMessages(prev => [...prev, newMsg]);
+    setMessages((prev) => [...prev, newMsg]);
     setInput("");
 
     /* AUTO REPLY (DEMO) */
     setTimeout(() => {
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
@@ -89,14 +89,14 @@ export default function Messages() {
             <h2 className="text-xl font-semibold">Messages</h2>
             <input
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search users"
               className="mt-3 w-full px-3 py-2 text-sm border rounded-lg"
             />
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {filteredUsers.map(u => (
+            {filteredUsers.map((u) => (
               <div
                 key={u.id}
                 onClick={() => setSelectedUser(u)}
@@ -105,7 +105,6 @@ export default function Messages() {
                   ${selectedUser?.id === u.id ? "bg-gray-100" : ""}
                 `}
               >
-                {/* ACTIVE BAR */}
                 <span
                   className={`w-[3px] h-8 rounded-full mr-1
                     ${
@@ -154,7 +153,7 @@ export default function Messages() {
 
               {/* MESSAGES */}
               <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-3">
-                {chatMessages.map(m => (
+                {chatMessages.map((m) => (
                   <div
                     key={m.id}
                     className={`max-w-md px-4 py-2 rounded-2xl text-sm shadow-sm
@@ -177,7 +176,12 @@ export default function Messages() {
               <div className="flex gap-2 p-4 bg-white border-t border-gray-200">
                 <input
                   value={input}
-                  onChange={e => setInput(e.target.value)}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      sendMessage();
+                    }
+                  }}
                   placeholder="Type a message..."
                   className="flex-1 px-4 py-2 border rounded-lg text-sm"
                 />
@@ -195,6 +199,3 @@ export default function Messages() {
     </>
   );
 }
-
-
-

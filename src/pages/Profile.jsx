@@ -23,7 +23,7 @@ export default function Profile() {
 
   useEffect(() => {
     fetch(
-      "https://api.sheety.co/1307ff99c91046366d2a083d3fe95fc8/skillswap/users"
+      "https://api.sheety.co/09934dbeb4cdbd806015e7f281dc4805/skillswap/users"
     )
       .then((res) => res.json())
       .then((data) => {

@@ -20,7 +20,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId") || "5";
 
-  /* ---------------- STATE ---------------- */
+  /*  STATE */
 
   const [profileImage, setProfileImage] = useState(
     localStorage.getItem("profileImage") || "/profile-default.jpg"

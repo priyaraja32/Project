@@ -72,10 +72,10 @@ export default function Home() {
   );
 }
 
-/*  COMPONENT*/
+/* COMPONENT */
 function Feature({ title, desc }) {
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-sm border text-center">
+    <div className="bg-white rounded-3xl p-8 shadow-sm text-center">
       <h3 className="font-bold text-lg mb-2">{title}</h3>
       <p className="text-gray-500 text-sm">{desc}</p>
     </div>

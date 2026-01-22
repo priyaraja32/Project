@@ -1,6 +1,4 @@
 import axios from "axios";
-
-
 export const mockApi = axios.create({
   baseURL: "https://695bbe411d8041d5eeb8390d.mockapi.io",
   headers: {
@@ -8,25 +6,22 @@ export const mockApi = axios.create({
   },
 });
 
-
 export const sheetApi = axios.create({
-  baseURL:
-    "https://api.sheety.co/a2b1328993660a67af1a0300ee237042/skillswap",
+  baseURL: "https://api.sheety.co/09934dbeb4cdbd806015e7f281dc4805/skillswap/",
   headers: {
+    Authorization: "Bearer YOUR_SHEETY_TOKEN", 
     "Content-Type": "application/json",
   },
 });
-
 
 export const SHEETY_ENDPOINTS = {
   users: "/users",
   matches: "/matches",
   activities: "/activities",
-  mySkills: "/mySkills",
   requests: "/requests",
   messages: "/messages",
   community: "/community",
-  skills: "/skills",
+  skills: "/skills", 
 };
 
 export const fetchUsers = async () => {
@@ -40,6 +35,29 @@ export const fetchUsers = async () => {
   }
 };
 
+export const fetchUserById = async (id) => {
+  try {
+    const res = await sheetApi.get(`${SHEETY_ENDPOINTS.users}/${id}`);
+    return res.data.user;
+  } catch (err) {
+    console.warn("Sheety failed, using MockAPI (user by id)");
+    const res = await mockApi.get(`/users/${id}`);
+    return res.data;
+  }
+};
+
+export const updateUser = async (id, userData) => {
+  try {
+    const res = await sheetApi.put(`${SHEETY_ENDPOINTS.users}/${id}`, {
+      user: userData,
+    });
+    return res.data.user;
+  } catch (err) {
+    console.warn("Sheety failed, using MockAPI (update user)");
+    const res = await mockApi.put(`/users/${id}`, userData);
+    return res.data;
+  }
+};
 
 export const fetchMatches = async () => {
   try {
@@ -63,10 +81,6 @@ export const fetchActivities = async () => {
   }
 };
 
-
-
-
-/* GET ALL SKILLS */
 export const fetchSkills = async () => {
   try {
     const res = await sheetApi.get(SHEETY_ENDPOINTS.skills);
@@ -78,19 +92,6 @@ export const fetchSkills = async () => {
   }
 };
 
-/* GET SINGLE SKILL */
-export const fetchSkillById = async (id) => {
-  try {
-    const res = await sheetApi.get(`${SHEETY_ENDPOINTS.skills}/${id}`);
-    return res.data.skill;
-  } catch (err) {
-    console.warn("Sheety failed, using MockAPI (skill by id)");
-    const res = await mockApi.get(`/skills/${id}`);
-    return res.data;
-  }
-};
-
-/* ADD SKILL */
 export const addSkill = async (skillData) => {
   try {
     const res = await sheetApi.post(SHEETY_ENDPOINTS.skills, {
@@ -103,30 +104,3 @@ export const addSkill = async (skillData) => {
     return res.data;
   }
 };
-
-/* UPDATE SKILL */
-export const updateSkill = async (id, skillData) => {
-  try {
-    const res = await sheetApi.put(`${SHEETY_ENDPOINTS.skills}/${id}`, {
-      skill: skillData,
-    });
-    return res.data.skill;
-  } catch (err) {
-    console.warn("Sheety failed, using MockAPI (update skill)");
-    const res = await mockApi.put(`/skills/${id}`, skillData);
-    return res.data;
-  }
-};
-
-/* DELETE SKILL */
-export const deleteSkill = async (id) => {
-  try {
-    await sheetApi.delete(`${SHEETY_ENDPOINTS.skills}/${id}`);
-    return true;
-  } catch (err) {
-    console.warn("Sheety failed, using MockAPI (delete skill)");
-    await mockApi.delete(`/skills/${id}`);
-    return true;
-  }
-};
-

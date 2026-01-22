@@ -24,7 +24,9 @@ export default function Login() {
       }
 
       localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard");
+
+      //  CHANGE to Home after login
+      navigate("/home");
     } catch (err) {
       alert("Login failed");
     }
@@ -90,4 +92,3 @@ function Input({ icon, type, value, setValue, label }) {
     </div>
   );
 }
-
