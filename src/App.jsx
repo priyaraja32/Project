@@ -1,137 +1,39 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
-/* PUBLIC */
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Home from "./pages/Home";
-
-/* PROTECTED */
-import Dashboard from "./pages/Dashboard";
-import MySkills from "./pages/MySkills";
-import AddSkill from "./pages/AddSkill";
-import ExploreSkills from "./pages/ExploreSkills";
-import Community from "./pages/Community";
-import Messages from "./pages/Messages";
-import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
-import ViewProfile from "./pages/ViewProfile";
-import RequestSwap from "./pages/RequestSwap";
-
-import ProtectedRoute from "./routes/ProtectedRoute";
+import { useState } from "react";
+import NoteForm from "./components/NoteForm";
+import NoteCard from "./components/NoteCard";
 
 export default function App() {
+  const [notes, setNotes] = useState([]);
+
+  const addNote = (note) => {
+    setNotes([{ ...note, id: Date.now() }, ...notes]);
+  };
+
+  const deleteNote = (id) => {
+    setNotes(notes.filter((note) => note.id !== id));
+  };
+
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* DEFAULT → LOGIN */}
-        <Route path="/" element={<Navigate to="/login" />} />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-white text-center mb-6">
+          📝 My Notes App
+        </h1>
 
-        {/* AUTH */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <NoteForm addNote={addNote} />
 
-        {/* HOME AFTER LOGIN */}
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* APP PAGES */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/my-skills"
-          element={
-            <ProtectedRoute>
-              <MySkills />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/add-skill"
-          element={
-            <ProtectedRoute>
-              <AddSkill />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/explore-skills"
-          element={
-            <ProtectedRoute>
-              <ExploreSkills />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/community"
-          element={
-            <ProtectedRoute>
-              <Community />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/messages"
-          element={
-            <ProtectedRoute>
-              <Messages />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/profile/:id"
-          element={
-            <ProtectedRoute>
-              <ViewProfile />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/request/:id"
-          element={
-            <ProtectedRoute>
-              <RequestSwap />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+        <div className="grid md:grid-cols-2 gap-6 mt-8">
+          {notes.length === 0 ? (
+            <p className="text-white text-center col-span-full">
+              No notes yet. Add one!
+            </p>
+          ) : (
+            notes.map((note) => (
+              <NoteCard key={note.id} note={note} deleteNote={deleteNote} />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
-
